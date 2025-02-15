@@ -11,10 +11,10 @@ bundle:
 	npm run build
 
 build-image:
-	docker build -t gridSort .
+	docker build -t grid-sort .
 
 run: build-image
-	docker run -d -p 8080:80 gridSort
+	docker run -d -p 8080:80 grid-sort
 
 deploy: bundle build-image run
 
