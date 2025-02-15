@@ -1,8 +1,8 @@
 // BEGIN (write your solution here)
 export default {
   translation: {
-    nameHeading: 'Name',
-    valueHeading: 'Value',
+    nameHeader: 'Name',
+    valueHeader: 'Value',
   },
 };
 // END

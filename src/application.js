@@ -2,24 +2,7 @@ import i18next from 'i18next';
 import onChange from 'on-change';
 import resources from './locales/index.js';
 
-// BEGIN (write your solution here)
-
-const i18nextInstance = i18next.createInstance();
-await i18nextInstance.init({
-  lng: 'en',
-  debug: true,
-  resources: {
-    en: resources.en,
-    ru: resources.ru,
-  },
-});
-
-await i18nextInstance.changeLanguage('ru', null);
-
-const rawData = document.location;
-// const rawData = { first: '1', second: '2', third: '2', z: '0', a: '9' };
-
-const normalize = userData => {
+export const normalize = userData => {
   const resultData = [];
   const keys = Object.keys(userData);
   const normalizedKeys = keys.filter(key => {
@@ -38,7 +21,7 @@ const normalize = userData => {
   return resultData;
 };
 
-const sortByNamesAsc = data => {
+export const sortByNamesAsc = data => {
   data.sort(([name1, value1], [name2, value2]) => {
     if (name1 === name2) {
       return value1.localeCompare(value2);
@@ -47,7 +30,7 @@ const sortByNamesAsc = data => {
   });
 };
 
-const sortByNamesDesc = data => {
+export const sortByNamesDesc = data => {
   data.sort(([name1, value1], [name2, value2]) => {
     if (name1 === name2) {
       return value2.localeCompare(value1);
@@ -56,7 +39,7 @@ const sortByNamesDesc = data => {
   });
 };
 
-const sortByValuesAsc = data => {
+export const sortByValuesAsc = data => {
   data.sort(([name1, value1], [name2, value2]) => {
     if (value1 === value2) {
       return name1.localeCompare(name2);
@@ -65,7 +48,7 @@ const sortByValuesAsc = data => {
   });
 };
 
-const sortByValuesDesc = data => {
+export const sortByValuesDesc = data => {
   data.sort(([name1, value1], [name2, value2]) => {
     if (value1 === value2) {
       return name2.localeCompare(name1);
@@ -74,7 +57,7 @@ const sortByValuesDesc = data => {
   });
 };
 
-function generateTable(rowNum, colNum) {
+export function generateTable(rowNum, colNum) {
   const tbl = document.createElement('table');
   const tblBody = document.createElement('tbody');
   for (let i = 0; i < rowNum; i += 1) {
@@ -91,21 +74,37 @@ function generateTable(rowNum, colNum) {
   return tbl;
 }
 
-const fillGridWithHeaders = (grid, headers) => {
+export const fillGridWithHeaders = (grid, headers) => {
   for (let j = 0; j < headers.length; j += 1) {
     grid.rows[0].cells[j].appendChild(headers[j]);
   }
 };
 
-const fillGridWithData = (grid, data) => {
+export const fillGridWithData = (grid, data) => {
   for (let i = 0; i < data.length; i += 1) {
     for (let j = 0; j < 2; j += 1) {
+      // eslint-disable-next-line no-param-reassign
       grid.rows[i + 1].cells[j].textContent = data[i][j];
     }
   }
 };
 
-export default () => {
+export default async () => {
+  const i18nextInstance = i18next.createInstance();
+  await i18nextInstance.init({
+    lng: 'en',
+    debug: true,
+    resources: {
+      en: resources.en,
+      ru: resources.ru,
+    },
+  });
+
+  await i18nextInstance.changeLanguage('ru', null);
+
+  const rawData = document.location;
+  // const rawData = { first: '1', second: '2', third: '2', z: '0', a: '9' };
+
   const state = {
     nameOrder: 'Asc',
     valueOrder: 'Unsorted',
@@ -113,14 +112,13 @@ export default () => {
   };
 
   // Initialisation================================
-  const nameHeading = document.createElement('a');
-  nameHeading.href = '';
-  nameHeading.textContent = `${i18nextInstance.t('nameHeading')} (${state.nameOrder})`;
-  const valueHeading = document.createElement('a');
-  valueHeading.href = '';
-  valueHeading.textContent = `${i18nextInstance.t('valueHeading')} (${state.valueOrder})`;
-
-  const tableHeaders = [nameHeading, valueHeading];
+  const nameHeader = document.createElement('a');
+  nameHeader.href = '';
+  nameHeader.textContent = `${i18nextInstance.t('nameHeader')} (${state.nameOrder})`;
+  const valueHeader = document.createElement('a');
+  valueHeader.href = '';
+  valueHeader.textContent = `${i18nextInstance.t('valueHeader')} (${state.valueOrder})`;
+  const tableHeaders = [nameHeader, valueHeader];
 
   state.data = normalize(rawData);
   sortByNamesAsc(state.data);
@@ -128,17 +126,18 @@ export default () => {
   const grid = generateTable(state.data.length + 1, 2);
   fillGridWithHeaders(grid, tableHeaders);
   fillGridWithData(grid, state.data);
+
   const container = document.querySelector('.container');
   container.appendChild(grid);
 
   // VIEW: ==========================================
   const render = (path, value) => {
     if (path === 'nameOrder') {
-      nameHeading.textContent = `${i18nextInstance.t('nameHeading')} (${value})`;
+      nameHeader.textContent = `${i18nextInstance.t('nameHeader')} (${value})`;
     }
 
     if (path === 'valueOrder') {
-      valueHeading.textContent = `${i18nextInstance.t('valueHeading')} (${value})`;
+      valueHeader.textContent = `${i18nextInstance.t('valueHeader')} (${value})`;
     }
 
     if (path === 'data') {
@@ -149,7 +148,8 @@ export default () => {
 
   const watchedState = onChange(state, render);
 
-  nameHeading.addEventListener('click', e => {
+  // CONTROLLER: ====================================
+  nameHeader.addEventListener('click', e => {
     e.preventDefault();
     if (watchedState.nameOrder === 'Asc') {
       watchedState.nameOrder = 'Desc';
@@ -163,7 +163,7 @@ export default () => {
     watchedState.valueOrder = 'Unsorted';
   });
 
-  valueHeading.addEventListener('click', e => {
+  valueHeader.addEventListener('click', e => {
     e.preventDefault();
     if (watchedState.valueOrder === 'Asc') {
       watchedState.valueOrder = 'Desc';
